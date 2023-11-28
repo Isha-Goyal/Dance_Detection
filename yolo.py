@@ -1,9 +1,10 @@
 from ultralytics import YOLO
-# import torch
+import torch
 import numpy as np
 import cv2
-# from time import time
-# import sys
+from time import time
+import sys
+import tensorflow as tf
 
 model = YOLO("yolov8m-pose.pt")
 
@@ -27,10 +28,12 @@ model = YOLO("yolov8m-pose.pt")
 results = model(source="pose-test-img.jpg", show=True, conf=0.3, save=False)
 
 keypoints = results[0].keypoints.xy
-keypoints = np.array(keypoints)
+# keypoints = np.array(keypoints)
 print(keypoints)
 
 plotted_img = "pose-test-img.jpg"
 for pt in keypoints:
     print(pt)
     plotted_img = cv2.circle(plotted_img, pt, radius=2, color=(0, 0, 255), thickness=-1)
+
+    # current issue: pt is a tensor and not a numpy array, fix that
