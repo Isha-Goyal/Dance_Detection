@@ -22,8 +22,12 @@ setup(
         'console_scripts': [
             'teleop = dance_neatos.teleop:main',
             'yolo_video_neato = dance_neatos.yolo_video_neato:main',
+<<<<<<< HEAD
             'move_neato = dance_neatos.move_neato:main',
             'fake_frames = dance_neatos.fake_frames:main',
+=======
+            'yolo_neato_live = dance_neatos.yolo_neato_live:main'
+>>>>>>> 065c1dd6532a82a2d0ec2b4756f79e95a09b307f
         ],
     },
 )
