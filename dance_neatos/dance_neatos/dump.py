@@ -59,6 +59,7 @@ class ObstacleNode(Node):
         else:
             msg.angular.z = 0.0
         msg.linear.x = 0.2
+
         self.vel_pub.publish(msg)
 
 
