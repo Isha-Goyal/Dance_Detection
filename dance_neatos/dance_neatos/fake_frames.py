@@ -5,6 +5,7 @@ from visualization_msgs.msg import Marker
 from std_msgs.msg import Int32MultiArray
 import math
 import random
+import numpy as np
 
 class FramesNode(Node):
     def __init__(self):
@@ -16,8 +17,15 @@ class FramesNode(Node):
 
     def run_loop(self):
         self.x_pos += random.random()
-        self.y_pos += random.uniform(-1,1)
-        self.frames.publish([self.x_pos,self.y_pos])
+        self.y_pos += random.random()
+
+        # Convert float coordinates to integers
+        x_int = int(self.x_pos)
+        y_int = int(self.y_pos)
+
+        int32_multi_array = Int32MultiArray()
+        int32_multi_array.data = [x_int, y_int]
+        self.frames.publish(int32_multi_array)
 
 
 def main(args=None):

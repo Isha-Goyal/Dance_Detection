@@ -10,7 +10,7 @@ class MovementNode(Node):
     def __init__(self):
         super().__init__('obstacle_avoider_node')
         self.create_subscription(Int32MultiArray, 'keypoint', self.process_keypoint, 10)
-        self.timer = self.create_timer(.1, self.process_keypoint)
+        # self.timer = self.create_timer(.1, self.process_keypoint(keypoint))
         self.head_vel_pub = self.create_publisher(Twist, 'cmd_vel', 10)
         # self.head_msg_pub = self.create_publisher(Marker, 'obstacle', 10)
         # starter values
@@ -19,8 +19,8 @@ class MovementNode(Node):
 
     def process_keypoint(self, keypoint):
         msg = Twist()
-        delta_x = keypoint[0] - self.x_prev
-        delta_y = keypoint[1] - self.y_prev
+        delta_x = keypoint.data[0] - self.x_prev
+        delta_y = keypoint.data[1] - self.y_prev
         angular_turn = math.atan2(delta_y,delta_x)
         forward = math.sqrt(delta_x**2+delta_y**2)
         msg.angular.z = angular_turn
@@ -28,8 +28,8 @@ class MovementNode(Node):
         self.head_vel_pub.publish(msg)
 
         # Set current keypoint to previous
-        self.x_prev = keypoint[0]
-        self.y_prev = keypoint[1]
+        self.x_prev = keypoint.data[0]
+        self.y_prev = keypoint.data[1]
 
 
 def main(args=None):
