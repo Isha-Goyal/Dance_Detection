@@ -39,7 +39,7 @@ def find_keypoints(model, video_path, cap):
                 plotted_img = cv2.putText(plotted_img, str(i),ctr, fontFace=0, fontScale=1, color=(0, 0, 255), thickness=2)
 
             # Display
-            cv2.imshow("YOLOv8 Inference", plotted_img)
+            cv2.imshow("YOLOv8 Inference", annotated_frame)
 
             # Break the loop if 'q' is pressed
             if cv2.waitKey(1) & 0xFF == ord("q"):

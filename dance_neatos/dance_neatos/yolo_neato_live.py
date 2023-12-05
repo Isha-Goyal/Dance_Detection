@@ -23,7 +23,8 @@ class KeyPointsNode(Node):
         # Load the YOLOv8 model
         self.model = YOLO('yolov8m-pose.pt')
         # Open the video file
-        self.video_path = "abs_cut.mp4"
+        # note: need to change this so it won't break on other people's laptops
+        self.video_path = "/home/igoyal/ros2_ws/src/Dance_Detection/abs_cut.mp4"
         self.cap = cv2.VideoCapture(self.video_path)
         print("cap created")
 
@@ -43,26 +44,22 @@ class KeyPointsNode(Node):
 
             # Read a frame from the video
             success, frame = self.cap.read()
-            print("frame read")
 
             if success:
                 # Run YOLOv8 inference on the frame
                 results = self.model(frame)
-                print("got results")
 
                 # Visualize the results on the frame
                 annotated_frame = results[0].plot()
 
                 # plot by ourselves with keypoint info
                 keypoints = results[0].keypoints.xy.cpu().numpy()
-                print("keypoints found")
 
                 plotted_img = frame
 
                 for i in range(len(keypoints[0])):
                     pt = keypoints[0][i]
                     ctr = (int(pt[0]), int(pt[1]))
-                    print(pt)
                     plotted_img = cv2.circle(plotted_img, ctr, radius=2, color=(0, 0, 255), thickness=-1)
                     plotted_img = cv2.putText(plotted_img, str(i),ctr, fontFace=0, fontScale=1, color=(0, 0, 255), thickness=2)
 
@@ -95,47 +92,17 @@ class KeyPointsNode(Node):
         for i in range(len(keypoints)):
             frame = []
             for j in set:
-                frame.append(keypoints[i][0][j])
+                frame.append(keypoints[i][j])
             cleaned.append(frame)
 
         return cleaned # this should be of size # of frames and the array for each frame should have the number of arrays as we chose keypoints in the set
 
     def run_loop(self):
-        print("loop called")
-        # kpts = self.find_keypoints()
-        # # cleaned = self.extract_mvmt(kpts)
-        # print(kpts)
 
-        if self.cap.isOpened():
-            print("The cap is open")
-
-            # Read a frame from the video
-            success, frame = self.cap.read()
-            print("frame read")
-
-            if success:
-                # Run YOLOv8 inference on the frame
-                results = self.model(frame)
-                print("got results")
-
-                # Visualize the results on the frame
-                annotated_frame = results[0].plot()
-
-                # plot by ourselves with keypoint info
-                keypoints = results[0].keypoints.xy.cpu().numpy()
-                print("keypoints found")
-
-                plotted_img = frame
-
-                for i in range(len(keypoints[0])):
-                    pt = keypoints[0][i]
-                    ctr = (int(pt[0]), int(pt[1]))
-                    print(pt)
-                    plotted_img = cv2.circle(plotted_img, ctr, radius=2, color=(0, 0, 255), thickness=-1)
-                    plotted_img = cv2.putText(plotted_img, str(i),ctr, fontFace=0, fontScale=1, color=(0, 0, 255), thickness=2)
-
-                # Display
-                cv2.imshow("YOLOv8 Inference", plotted_img)
+        # print("loop called")
+        kpts = self.find_keypoints()
+        #cleaned = self.extract_mvmt(kpts)
+        print(kpts)
 
 
 def main(args=None):
