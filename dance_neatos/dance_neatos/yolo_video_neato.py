@@ -15,10 +15,13 @@ from std_msgs.msg import String
 from geometry_msgs.msg import Twist
 import cv2
 from ultralytics import YOLO
+from std_msgs.msg import Int32MultiArray
+
 
 class KeyPointsNode(Node):
     def __init__(self):
         super().__init__('keypoint_node')
+        self.keypoint_pub = self.create_publisher(Int32MultiArray, 'keypoint', 10)
         # Load the YOLOv8 model
         self.model = YOLO('yolov8m-pose.pt')
         # Open the video file
@@ -30,18 +33,11 @@ class KeyPointsNode(Node):
         print(kpts)
 
         self.timer = self.create_timer(.1, self.run_loop)
-        # self.paul_vel_pub = self.create_publisher(Twist, 'paul/cmd_vel', 10)
-        # self.alice_vel_pub = self.create_publisher(Twist, 'alice/cmd_vel', 10)
-        # self.isha_vel_pub = self.create_publisher(Twist, 'isha/cmd_vel', 10)
-
-        
-        
+           
 
     def find_keypoints(self):
-        ret = []
         # Loop through the video frames
         while self.cap.isOpened():
-            print("The cap is open")
             # Read a frame from the video
             success, frame = self.cap.read()
 
@@ -54,7 +50,15 @@ class KeyPointsNode(Node):
 
                 # plot by ourselves with keypoint info
                 keypoints = results[0].keypoints.xy.cpu().numpy()
-                ret.append(keypoints)
+                # publisher here
+                int32_multi_array = Int32MultiArray()
+                int32_multi_array.data = [int(keypoints[0][0][0]), int(keypoints[0][0][1]),
+                                    int(keypoints[0][10][0]), int(keypoints[0][10][1]),
+                                    int(keypoints[0][9][0]), int(keypoints[0][9][1]),
+                                    int(keypoints[0][16][0]), int(keypoints[0][16][1]),
+                                    int(keypoints[0][15][0]), int(keypoints[0][15][1])
+                                    ]
+                self.keypoint_pub.publish(int32_multi_array)
 
                 plotted_img = frame
 
@@ -78,29 +82,9 @@ class KeyPointsNode(Node):
         # Release the video capture object and close the display window
         self.cap.release()
         cv2.destroyAllWindows()
-        print(ret, "this is the ret")
-        return ret
-
-    def extract_mvmt(self, keypoints):
-        """
-        Takes keypoints and returns it in some format that can be used to control the neatos.
-        """
-
-        set = [0, 10, 9, 16, 15] # which keypoints you want to pull out
-        cleaned = []
-
-        # Create an array with only the keypoints we want
-        for i in range(len(keypoints)):
-            frame = []
-            for j in set:
-                frame.append(keypoints[i][0][j])
-            cleaned.append(frame)
-
-        return cleaned # this should be of size # of frames and the array for each frame should have the number of arrays as we chose keypoints in the set
-
+  
     def run_loop(self):
         kpts = self.find_keypoints()
-        # cleaned = self.extract_mvmt(kpts)
         print(kpts)
 
 def main(args=None):

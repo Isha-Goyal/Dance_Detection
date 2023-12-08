@@ -10,8 +10,11 @@ class MovementNode(Node):
     def __init__(self):
         super().__init__('obstacle_avoider_node')
         self.create_subscription(Int32MultiArray, 'keypoint', self.process_keypoint, 10)
-        # self.timer = self.create_timer(.1, self.process_keypoint(keypoint))
-        self.head_vel_pub = self.create_publisher(Twist, 'cmd_vel', 10)
+        self.head_vel_pub = self.create_publisher(Twist, 'head/cmd_vel', 10)
+        self.left_arm_val = self.create_publisher(Twist, 'left_a/cmd_vel', 10)
+        self.right_arm_val = self.create_publisher(Twist, 'right_a/cmd_vel', 10)
+        self.left_leg_val = self.create_publisher(Twist, 'left_l/cmd_vel', 10)
+        self.right_leg_val = self.create_publisher(Twist, 'right_l/cmd_vel', 10)
         # self.head_msg_pub = self.create_publisher(Marker, 'obstacle', 10)
         # starter values
         self.x_prev = 0.0
