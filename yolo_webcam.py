@@ -9,7 +9,7 @@ note: showing annotated_frame will show the default visual that comes with the m
 import cv2
 from ultralytics import YOLO
 
-def find_keypoints(model, video_path, cap):
+def find_keypoints(model, cap):
 
     ret = []
 
@@ -39,7 +39,7 @@ def find_keypoints(model, video_path, cap):
                 plotted_img = cv2.putText(plotted_img, str(i),ctr, fontFace=0, fontScale=1, color=(0, 0, 255), thickness=2)
 
             # Display
-            cv2.imshow("YOLOv8 Inference", annotated_frame)
+            cv2.imshow("YOLOv8 Inference", plotted_img)
 
             # Break the loop if 'q' is pressed
             if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -75,11 +75,12 @@ def main():
     # Load the YOLOv8 model
     model = YOLO('yolov8m-pose.pt')
 
-    # Open the video file
-    video_path = "abs_cut.mp4"
-    cap = cv2.VideoCapture(video_path)
+    
+    cap = cv2.VideoCapture(0)
+    # cv2.imwrite('img2.png', frame)
+    # cv2.imshow("img1", frame)
 
-    kpts = find_keypoints(model, video_path, cap)
+    kpts = find_keypoints(model, cap)
 
     cleaned = extract_mvmt(kpts)
     print(cleaned)
