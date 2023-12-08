@@ -20,10 +20,10 @@ from std_msgs.msg import Int32MultiArray
 
 class KeyPointsNode(Node):
     def __init__(self):
-        super().__init__('keypoint_node')
-        self.keypoint_pub = self.create_publisher(Int32MultiArray, 'keypoint', 10)
+        super().__init__("keypoint_node")
+        self.keypoint_pub = self.create_publisher(Int32MultiArray, "keypoint", 10)
         # Load the YOLOv8 model
-        self.model = YOLO('yolov8m-pose.pt')
+        self.model = YOLO("yolov8m-pose.pt")
         # Open the video file
         self.video_path = "/home/mcranor/ros2_ws/src/Dance_Detection/abs_cut.mp4"
         self.cap = cv2.VideoCapture(self.video_path)
@@ -32,8 +32,7 @@ class KeyPointsNode(Node):
         # cleaned = self.extract_mvmt(kpts)
         print(kpts)
 
-        self.timer = self.create_timer(.1, self.run_loop)
-           
+        self.timer = self.create_timer(0.1, self.run_loop)
 
     def find_keypoints(self):
         # Loop through the video frames
@@ -52,12 +51,18 @@ class KeyPointsNode(Node):
                 keypoints = results[0].keypoints.xy.cpu().numpy()
                 # publisher here
                 int32_multi_array = Int32MultiArray()
-                int32_multi_array.data = [int(keypoints[0][0][0]), int(keypoints[0][0][1]),
-                                    int(keypoints[0][10][0]), int(keypoints[0][10][1]),
-                                    int(keypoints[0][9][0]), int(keypoints[0][9][1]),
-                                    int(keypoints[0][16][0]), int(keypoints[0][16][1]),
-                                    int(keypoints[0][15][0]), int(keypoints[0][15][1])
-                                    ]
+                int32_multi_array.data = [
+                    int(keypoints[0][0][0]),
+                    int(keypoints[0][0][1]),
+                    int(keypoints[0][9][0]),
+                    int(keypoints[0][9][1]),
+                    int(keypoints[0][10][0]),
+                    int(keypoints[0][10][1]),
+                    int(keypoints[0][15][0]),
+                    int(keypoints[0][15][1]),
+                    int(keypoints[0][16][0]),
+                    int(keypoints[0][16][1]),
+                ]
                 self.keypoint_pub.publish(int32_multi_array)
 
                 plotted_img = frame
@@ -66,8 +71,18 @@ class KeyPointsNode(Node):
                     pt = keypoints[0][i]
                     ctr = (int(pt[0]), int(pt[1]))
                     print(pt)
-                    plotted_img = cv2.circle(plotted_img, ctr, radius=2, color=(0, 0, 255), thickness=-1)
-                    plotted_img = cv2.putText(plotted_img, str(i),ctr, fontFace=0, fontScale=1, color=(0, 0, 255), thickness=2)
+                    plotted_img = cv2.circle(
+                        plotted_img, ctr, radius=2, color=(0, 0, 255), thickness=-1
+                    )
+                    plotted_img = cv2.putText(
+                        plotted_img,
+                        str(i),
+                        ctr,
+                        fontFace=0,
+                        fontScale=1,
+                        color=(0, 0, 255),
+                        thickness=2,
+                    )
 
                 # Display
                 cv2.imshow("YOLOv8 Inference", plotted_img)
@@ -82,10 +97,11 @@ class KeyPointsNode(Node):
         # Release the video capture object and close the display window
         self.cap.release()
         cv2.destroyAllWindows()
-  
+
     def run_loop(self):
         kpts = self.find_keypoints()
         print(kpts)
+
 
 def main(args=None):
     rclpy.init(args=args)
