@@ -39,14 +39,15 @@ class MovementNode(Node):
         delta_y = keypoint.data[y] - self.coord_prev[y]
 
         angle = math.atan2(delta_y, delta_x)
-        angle_sign = math.copysign(1, angle)
-        if abs(angle) > math.pi/2:
-            move_sign = -1
-            angle = angle - math.pi/2
+        # angle_sign = math.copysign(1, angle)
+        # move_sign = 1
+        # if abs(angle) > math.pi/2:
+        #     move_sign = -1
+        #     angle = angle - math.pi/2
         
         forward = math.sqrt(delta_x ** 2 + delta_y ** 2)
-        msg.angular.z = abs(angle)
-        msg.linear.x = forward *.01 * move_sign
+        msg.angular.z = angle #* angle_sign
+        msg.linear.x = forward *.1 #* move_sign
         neato.publish(msg)
 
         # Set current keypoint to previous
