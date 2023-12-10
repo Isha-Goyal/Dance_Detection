@@ -25,7 +25,7 @@ class KeyPointsNode(Node):
         # Load the YOLOv8 model
         self.model = YOLO("yolov8m-pose.pt")
         # Open the video file
-        self.video_path = "/home/mcranor/ros2_ws/src/Dance_Detection/paul_vid.mov"
+        self.video_path = "/home/mcranor/ros2_ws/src/Dance_Detection/test_imgs_vids/paul_vid.mov"
         self.cap = cv2.VideoCapture(self.video_path)
 
         kpts = self.find_keypoints()
