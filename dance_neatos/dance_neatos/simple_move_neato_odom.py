@@ -44,11 +44,13 @@ class MovementNodeOdom(Node):
             # if the starting points of the neatos haven't been set to the positions of their
             # keypoints in the first frame, then do that
             if self.info[i][0]==0:
-                self.info[i][self.labels.index("initX")] = convert(keypoint.data[x]) # distance
-                self.info[i][self.labels.index("initY")] = convert(keypoint.data[y]) # distance
+                initX, initY = convert(keypoint.data[x], keypoint.data[y])
+                self.info[i][self.labels.index("initX")] = initX
+                self.info[i][self.labels.index("initY")] = initY
             else:
-                self.info[i][self.labels.index("targetX")] = convert(keypoint.data[x]) # distance
-                self.info[i][self.labels.index("targetY")] = convert(keypoint.data[y]) # distance
+                targetX, targetY = convert(keypoint.data[x], keypoint.data[y])
+                self.info[i][self.labels.index("targetX")] = targetX
+                self.info[i][self.labels.index("targetY")] = targetY
 
             self.move_neato(i)
 
