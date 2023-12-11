@@ -26,7 +26,8 @@ setup(
             'fake_frames = dance_neatos.fake_frames:main',
             'yolo_neato_webcam = dance_neatos.yolo_neato_webcam:main',
             'test_odom = dance_neatos.test_odom:main',
-            'move_neato_odom = dance_neatos.move_neato_odom:main'
+            'move_neato_odom = dance_neatos.move_neato_odom:main',
+            'simple_move_neato_odom = dance_neatos.simple_move_neato_odom:main'
         ],
     },
 )
