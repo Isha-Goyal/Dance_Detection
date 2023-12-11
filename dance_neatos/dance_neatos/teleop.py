@@ -12,9 +12,9 @@ class TeleopNode(Node):
     def __init__(self):
         super().__init__('teleop_node')
         self.timer = self.create_timer(0.1, self.run_loop)
-        self.paul_vel_pub = self.create_publisher(Twist, 'paul/cmd_vel', 10)
-        self.alice_vel_pub = self.create_publisher(Twist, 'alice/cmd_vel', 10)
-        self.isha_vel_pub = self.create_publisher(Twist, 'isha/cmd_vel', 10)
+        self.right_l_vel_pub = self.create_publisher(Twist, 'right_l/cmd_vel', 10)
+        # self.alice_vel_pub = self.create_publisher(Twist, 'alice/cmd_vel', 10)
+        # self.isha_vel_pub = self.create_publisher(Twist, 'isha/cmd_vel', 10)
 
     def run_loop(self):
         # runs 10 times every second
@@ -41,12 +41,15 @@ class TeleopNode(Node):
         elif key == 'x':
             msg.linear.x = -0.3
             msg.angular.z = -0.5
+        elif key == 't':
+            msg.linear.x = 0
+            msg.angular.z = 0
         elif key == '\x03':
             self.destroy_node()
         # publish the velocity
-        self.paul_vel_pub.publish(msg)
-        self.alice_vel_pub.publish(msg)
-        self.isha_vel_pub.publish(msg)
+        self.right_l_vel_pub.publish(msg)
+        # self.alice_vel_pub.publish(msg)
+        # self.isha_vel_pub.publish(msg)
 
     def getKey(self): 
         # tracks which key is pressed on the keyboard
