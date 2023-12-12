@@ -8,7 +8,11 @@ def convert(key_x, key_y):
     y_length_m = 2.5
 
     location_x = key_x / x_length * x_length_m
-    location_y = - key_y / y_length * y_length_m
+
+    if key_y == 0:
+        location_y = 0
+    else:
+        location_y = (y_length - key_y)/ y_length * y_length_m
 
     return location_x, location_y
 

@@ -12,10 +12,6 @@ class MovementNodeOdom(Node):
     def __init__(self):
         super().__init__("move_neato_odom_node")
         self.create_subscription(Int32MultiArray, "keypoint", self.process_keypoint, 10)
-
-        # self.neato_names = ['head', 'left_a', 'right_a', 'left_l', 'right_l'] # names of the neatos
-        # self.inits = [0, 0, 0, 0, 0, 0, 0] # initializing values that will eventually correspond to the below labels
-        # self.labels = ["initX", "initY", "currX", "currY", "currTheta", "targetX", "targetY"]
         
         self.neato_info = {
             # "head" :  {
@@ -89,22 +85,21 @@ class MovementNodeOdom(Node):
 
     def process_keypoint(self, keypoint):       
         for neato_name, neato_value in self.neato_info.items():
-            print("Received keypoint", neato_name)
             
             # if the starting points of the neatos haven't been set to the positions of their
             # keypoints in the first frame, then do that
 
             if neato_value['initX']==0.0 and neato_value['initY']==0.0:
-                print("init")
                 initX, initY = convert(keypoint.data[neato_value['keypoint_x']], keypoint.data[neato_value['keypoint_y']])
                 neato_value["initX"] = initX
                 neato_value["initY"] = initY
+                # print(f"init y: {initY}")
             else:
-                print("updating targets")
+                # print(f"keypoint: {keypoint.data[neato_value['keypoint_y']]}")
                 targetX, targetY = convert(keypoint.data[neato_value['keypoint_x']], keypoint.data[neato_value['keypoint_y']])
                 neato_value["targetX"] = targetX
                 neato_value["targetY"] = targetY
-                print(f"Target X: {targetX}, Target Y: {targetY}")
+                # print(f"Target Y: {targetY}")
                 self.move_neato(neato_name, neato_value)
 
     def update_pose(self, msg):
@@ -112,7 +107,7 @@ class MovementNodeOdom(Node):
 
         # Extracting position (x, y) and putting them in dictionary
         self.neato_info[neato_name]["currX"] = msg.pose.pose.position.x
-        self.neato_info[neato_name]["currY"] = msg.pose.pose.position.y
+        self.neato_info[neato_name]["currY"] = msg.pose.pose.position.y # change this back
 
         # Extracting orientation (quaternion)
         quaternion = (
@@ -131,7 +126,6 @@ class MovementNodeOdom(Node):
         # probably works, come back to if things don't
         # publisher = getattr(self, f"{neato_name}_pub")
         publisher = self.right_a_pub
-        print(neato_name)
         
         # initialize variables so they can be used as the conditional for the while loop
         curr_x = neato_value["currX"]
@@ -139,36 +133,23 @@ class MovementNodeOdom(Node):
         curr_theta = neato_value["currTheta"]
         new_x = neato_value["targetX"]
         new_y = neato_value["targetX"]
-        print(f"current x: {curr_x}, y: {curr_y}, theta: {curr_theta}")
+        print(f"y: {curr_y}")
 
         delta_x = new_x - curr_x
         delta_y = new_y - curr_y
-        vel = math.sqrt(delta_x**2 + delta_y**2)
-        print(f"delta x: {delta_x}, y: {delta_y}")
+        # vel = math.sqrt(delta_x**2 + delta_y**2)
+        # print(f"delta y: {delta_y}")
         
-        if abs(delta_x) > 0.03 or abs(delta_y) > 0.03:
+        if abs(delta_x) > 0.03:
             
-            new_theta = math.atan2(new_y, new_x)
-            delta_theta = new_theta - curr_theta
-            # print(f"delta theta: {delta_theta}")
+            # new_theta = math.atan2(new_y, new_x)
+            # delta_theta = new_theta - curr_theta
+            # # print(f"delta theta: {delta_theta}")
 
-            msg.linear.x = vel
-            msg.angular.z = delta_theta
+            msg.linear.x = delta_x
+            # msg.angular.z = delta_theta
             publisher.publish(msg)
 
-
-            # recalculate for next round
-            curr_x = neato_value["currX"]
-            curr_y = neato_value["currY"]
-            curr_theta = neato_value["currTheta"]
-            new_x = neato_value["targetX"]
-            new_y = neato_value["targetX"]
-            print(f"AAAAAAAAAAAAAcurrent x: {curr_x}, y: {curr_y}, theta: {curr_theta}")
-            # print(f" inside delta x: {delta_x}, y: {delta_y}")
-
-            delta_x = new_x - curr_x
-            delta_y = new_y - curr_y
-            vel = math.sqrt(delta_x**2 + delta_y**2)
         else:
             msg.linear.x = 0.0
             msg.angular.z = 0.0
