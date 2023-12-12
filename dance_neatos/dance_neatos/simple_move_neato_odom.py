@@ -19,7 +19,7 @@ class MovementNodeOdom(Node):
         self.info = {}
 
         for i in self.neato_names:
-            self.self.info.update({i:self.inits})
+            self.info.update({i:self.inits})
 
         self.head_vel_pub = self.create_publisher(Twist, "head/cmd_vel", 10)
         self.left_arm_pub = self.create_publisher(Twist, "left_a/cmd_vel", 10)
