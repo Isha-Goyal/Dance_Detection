@@ -16,16 +16,70 @@ class MovementNodeOdom(Node):
         self.neato_names = ['head', 'left_a', 'right_a', 'left_l', 'right_l'] # names of the neatos
         self.inits = [0, 0, 0, 0, 0, 0, 0] # initializing values that will eventually correspond to the below labels
         self.labels = ["initX", "initY", "currX", "currY", "currTheta", "targetX", "targetY"]
-        self.info = {}
+        
+        self.neato_info = {
+            "head" :  {
+                'initX': 0.0,
+                'initY': 0.0,
+                'currX': 0.0,
+                'currY': 0.0,
+                'currTheta': 0.0,
+                'targetX': 0.0,
+                'targetY': 0.0,
+                'keypoint_x' : 0,
+                'keypoint_y' : 1
+             },
+            "left_a" :  {
+                'initX': 0.0,
+                'initY': 0.0,
+                'currX': 0.0,
+                'currY': 0.0,
+                'currTheta': 0.0,
+                'targetX': 0.0,
+                'targetY': 0.0,
+                'keypoint_x' : 2,
+                'keypoint_y' : 3
+             },
+            "right_a" :  {
+                'initX': 0.0,
+                'initY': 0.0,
+                'currX': 0.0,
+                'currY': 0.0,
+                'currTheta': 0.0,
+                'targetX': 0.0,
+                'targetY': 0.0,
+                'keypoint_x' : 4,
+                'keypoint_y' : 5
+             },
+            "left_l" :  {
+                'initX': 0.0,
+                'initY': 0.0,
+                'currX': 0.0,
+                'currY': 0.0,
+                'currTheta': 0.0,
+                'targetX': 0.0,
+                'targetY': 0.0,
+                'keypoint_x' : 6,
+                'keypoint_y' : 7
+             },
+            "right_l" :  {
+                'initX': 0.0,
+                'initY': 0.0,
+                'currX': 0.0,
+                'currY': 0.0,
+                'currTheta': 0.0,
+                'targetX': 0.0,
+                'targetY': 0.0,
+                'keypoint_x' : 8,
+                'keypoint_y' : 9
+             }
+         }
 
-        for i in self.neato_names:
-            self.info.update({i:self.inits})
-
-        self.head_vel_pub = self.create_publisher(Twist, "head/cmd_vel", 10)
-        self.left_arm_pub = self.create_publisher(Twist, "left_a/cmd_vel", 10)
-        self.right_arm_pub = self.create_publisher(Twist, "right_a/cmd_vel", 10)
-        self.left_leg_pub = self.create_publisher(Twist, "left_l/cmd_vel", 10)
-        self.right_leg_pub = self.create_publisher(Twist, "right_l/cmd_vel", 10)
+        self.head_pub = self.create_publisher(Twist, "head/cmd_vel", 10)
+        self.left_a_pub = self.create_publisher(Twist, "left_a/cmd_vel", 10)
+        self.right_a_pub = self.create_publisher(Twist, "right_a/cmd_vel", 10)
+        self.left_l_pub = self.create_publisher(Twist, "left_l/cmd_vel", 10)
+        self.right_l_pub = self.create_publisher(Twist, "right_l/cmd_vel", 10)
 
         self.create_subscription(Odometry, "head/odom", self.update_pose, 10)
         self.create_subscription(Odometry, "left_a/odom", self.update_pose, 10)
@@ -33,34 +87,33 @@ class MovementNodeOdom(Node):
         self.create_subscription(Odometry, "left_l/odom", self.update_pose, 10)
         self.create_subscription(Odometry, "right_l/odom", self.update_pose, 10)
 
-    def process_keypoint(self, keypoint):
-
-        
-        for i in self.neato_names:
-            # set indices for each neato from the keypoints array
-            x = self.neato_names.index(i)
-            y = x + 1
+    def process_keypoint(self, keypoint):       
+        # for i in self.neato_names:
+        for neato_name, neato_value in self.neato_info.items():
+            print("Received keypoint", neato_name)
             
             # if the starting points of the neatos haven't been set to the positions of their
             # keypoints in the first frame, then do that
-            if self.info[i][0]==0:
-                initX, initY = convert(keypoint.data[x], keypoint.data[y])
-                self.info[i][self.labels.index("initX")] = initX
-                self.info[i][self.labels.index("initY")] = initY
-            else:
-                targetX, targetY = convert(keypoint.data[x], keypoint.data[y])
-                self.info[i][self.labels.index("targetX")] = targetX
-                self.info[i][self.labels.index("targetY")] = targetY
 
-            self.move_neato(i)
+            if neato_value['initX']==0.0 and neato_value['initY']==0.0:
+                print("init")
+                initX, initY = convert(keypoint.data[neato_value['keypoint_x']], keypoint.data[neato_value['keypoint_y']])
+                neato_value["initX"] = initX
+                neato_value["initY"] = initY
+            else:
+                print("updating targets")
+                targetX, targetY = convert(keypoint.data[neato_value['keypoint_x']], keypoint.data[neato_value['keypoint_y']])
+                neato_value["targetX"] = targetX
+                neato_value["targetY"] = targetY
+                print(f"Target X: {targetX}, Target Y: {targetY}")
+                self.move_neato(neato_name, neato_value)
 
     def update_pose(self, msg):
-        neato = msg.header.frame_id[0:-5]
+        neato_name = msg.header.frame_id[0:-4]
 
         # Extracting position (x, y) and putting them in dictionary
-        self.self.info[neato][self.labels.index("currX")]= msg.pose.pose.position.x
-        self.self.info[neato][self.labels.index("currY")] = msg.pose.pose.position.y
-        print(f"odom --> x: {self.x}, y: {self.y}")
+        self.neato_info[neato_name]["currX"] = msg.pose.pose.position.x
+        self.neato_info[neato_name]["currY"] = msg.pose.pose.position.y
 
         # Extracting orientation (quaternion)
         quaternion = (
@@ -71,19 +124,20 @@ class MovementNodeOdom(Node):
         )
 
         # Convert quaternion to Euler angles. Put heading into dictionary
-        _, _, self.info[neato][self.labels.index("currTheta")] = quaternion_to_euler(quaternion)
+        _, _, self.neato_info[neato_name]["currTheta"] = quaternion_to_euler(quaternion)
 
-    def move_neato(self, neato):
-
+    def move_neato(self, neato_name, neato_value):
         msg = Twist()
-        publisher = getattr(self, f"{neato}_pub")
+
+        # probably works, come back to if things don't
+        publisher = getattr(self, f"{neato_name}_pub")
         
         # initialize variables so they can be used as the conditional for the while loop
-        curr_x = self.info[neato][self.labels.index("currX")]
-        curr_y = self.info[neato][self.labels.index("currY")]
-        curr_theta = self.info[neato][self.labels.index("currTheta")]
-        new_x = self.info[neato][self.labels.index("targetX")]
-        new_y = self.info[neato][self.labels.index("targetY")]
+        curr_x = neato_value["currX"]
+        curr_y = neato_value["currY"]
+        curr_theta = neato_value["currTheta"]
+        new_x = neato_value["targetX"]
+        new_y = neato_value["targetX"]
         print(f"current x: {curr_x}, y: {curr_y}, theta: {curr_theta}")
 
         delta_x = new_x - curr_x
@@ -91,18 +145,6 @@ class MovementNodeOdom(Node):
         vel = math.sqrt(delta_x**2 + delta_y**2)
         
         while delta_x > 0.03 or delta_y > 0.03:
-            
-            curr_x = self.info[neato][self.labels.index("currX")]
-            curr_y = self.info[neato][self.labels.index("currY")]
-            curr_theta = self.info[neato][self.labels.index("currTheta")]
-            new_x = self.info[neato][self.labels.index("targetX")]
-            new_y = self.info[neato][self.labels.index("targetY")]
-            print(f"current x: {curr_x}, y: {curr_y}, theta: {curr_theta}")
-
-            delta_x = new_x - curr_x
-            delta_y = new_y - curr_y
-            vel = math.sqrt(delta_x**2 + delta_y**2)
-            # print(f"delta x: {delta_x}, y: {delta_y}")
             
             new_theta = math.atan2(new_y, new_x)
             delta_theta = new_theta - curr_theta
@@ -113,19 +155,19 @@ class MovementNodeOdom(Node):
             publisher.publish(msg)
 
             # recalculate for next round
-            curr_x = self.info[neato][self.labels.index("currX")]
-            curr_y = self.info[neato][self.labels.index("currY")]
-            curr_theta = self.info[neato][self.labels.index("currTheta")]
-            new_x = self.info[neato][self.labels.index("targetX")]
-            new_y = self.info[neato][self.labels.index("targetY")]
-            print(f"current x: {curr_x}, y: {curr_y}, theta: {curr_theta}")
+            curr_x = neato_value["currX"]
+            curr_y = neato_value["currY"]
+            curr_theta = neato_value["currTheta"]
+            new_x = neato_value["targetX"]
+            new_y = neato_value["targetX"]
+            print(f"AAAAAAAAAAAAAcurrent x: {curr_x}, y: {curr_y}, theta: {curr_theta}")
 
             delta_x = new_x - curr_x
             delta_y = new_y - curr_y
             vel = math.sqrt(delta_x**2 + delta_y**2)
 
-        msg.linear.x = 0
-        msg.angular.z = 0
+        msg.linear.x = 0.0
+        msg.angular.z = 0.0
         publisher.publish(msg)
 
 
