@@ -20,15 +20,10 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'teleop = dance_neatos.teleop:main',
-            'yolo_video_neato = dance_neatos.yolo_video_neato:main',
-            'move_neato = dance_neatos.move_neato:main',
-            'fake_frames = dance_neatos.fake_frames:main',
-            'yolo_neato_webcam = dance_neatos.yolo_neato_webcam:main',
-            'test_odom = dance_neatos.test_odom:main',
-            'move_neato_odom = dance_neatos.move_neato_odom:main',
-            'simple_move_neato_odom = dance_neatos.simple_move_neato_odom:main',
-            'up_down_simple = dance_neatos.up_down_simple:main'
+            'yolo_video = dance_neatos.yolo_video:main',
+            'yolo_webcam = dance_neatos.yolo_webcam:main',
+            'move_neato_two_directions = dance_neatos.move_neato_two_directions:main',
+            'move_neato_one_direction = dance_neatos.move_neato_one_direction:main'
         ],
     },
 )

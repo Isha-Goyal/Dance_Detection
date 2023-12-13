@@ -5,14 +5,8 @@ input: video_path
 note: showing annotated_frame will show the default visual that comes with the model (with all the colors and lines).
     Showing plotted_img will show the visual we are using for info gathering.
 """
-import tty
-import select
-import sys
-import termios
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
-from geometry_msgs.msg import Twist
 import cv2
 from ultralytics import YOLO
 from std_msgs.msg import Int32MultiArray
@@ -25,14 +19,21 @@ class KeyPointsNode(Node):
         # Load the YOLOv8 model
         self.model = YOLO("yolov8m-pose.pt")
         # Open the video file
-        
-        self.cap = cv2.VideoCapture(0)
-        kpts = self.find_keypoints()
-        print(kpts)
-
-        self.timer = self.create_timer(0.1, self.run_loop)
+        self.video_path = "~/Dance_Detection/test_imgs_vids/paul_vid.mov"
+        self.cap = cv2.VideoCapture(self.video_path)
+        self.timer = self.create_timer(0.5, self.run_loop)
 
     def find_keypoints(self):
+        """
+        Process video frames using YOLOv8 inference, extract keypoints, and visualize results.
+
+        This method iterates through video frames captured by a video capture object (self.cap).
+        For each frame, it performs YOLOv8 inference using a pre-trained model (self.model). The
+        keypoints are extracted from the inference results and visualized on the frame. The keypoint
+        information is published using a ROS publisher (self.keypoint_pub). The loop continues until
+        'q' is pressed or the end of the video is reached.
+
+        """
         # Loop through the video frames
         while self.cap.isOpened():
             # Read a frame from the video
@@ -45,9 +46,8 @@ class KeyPointsNode(Node):
                 # Visualize the results on the frame
                 annotated_frame = results[0].plot()
 
-                # plot by ourselves with keypoint info
+                # Plot keypoints and publish keypoint information
                 keypoints = results[0].keypoints.xy.cpu().numpy()
-                # publisher here
                 int32_multi_array = Int32MultiArray()
                 int32_multi_array.data = [
                     int(keypoints[0][0][0]),
@@ -63,8 +63,8 @@ class KeyPointsNode(Node):
                 ]
                 self.keypoint_pub.publish(int32_multi_array)
 
+                # Visualize keypoints on the frame
                 plotted_img = frame
-
                 for i in range(len(keypoints[0])):
                     pt = keypoints[0][i]
                     ctr = (int(pt[0]), int(pt[1]))
@@ -82,7 +82,7 @@ class KeyPointsNode(Node):
                         thickness=2,
                     )
 
-                # Display
+                # Display the frame with keypoints
                 cv2.imshow("YOLOv8 Inference", plotted_img)
 
                 # Break the loop if 'q' is pressed
