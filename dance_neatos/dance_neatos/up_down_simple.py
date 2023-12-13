@@ -13,29 +13,37 @@ class MovementNodeOdom(Node):
         super().__init__("move_neato_odom_node")
         self.create_subscription(Int32MultiArray, "keypoint", self.process_keypoint, 10)
         
+        self.head_pub = self.create_publisher(Twist, "head/cmd_vel", 10)
+        self.left_a_pub = self.create_publisher(Twist, "left_a/cmd_vel", 10)
+        self.right_a_pub = self.create_publisher(Twist, "right_a/cmd_vel", 10)
+        self.left_l_pub = self.create_publisher(Twist, "left_l/cmd_vel", 10)
+        self.right_l_pub = self.create_publisher(Twist, "right_l/cmd_vel", 10)
+
         self.neato_info = {
-            # "head" :  {
-            #     'initX': 0.0,
-            #     'initY': 0.0,
-            #     'currX': 0.0,
-            #     'currY': 0.0,
-            #     'currTheta': 0.0,
-            #     'targetX': 0.0,
-            #     'targetY': 0.0,
-            #     'keypoint_x' : 0,
-            #     'keypoint_y' : 1
-            #  },
-            # "left_a" :  {
-            #     'initX': 0.0,
-            #     'initY': 0.0,
-            #     'currX': 0.0,
-            #     'currY': 0.0,
-            #     'currTheta': 0.0,
-            #     'targetX': 0.0,
-            #     'targetY': 0.0,
-            #     'keypoint_x' : 2,
-            #     'keypoint_y' : 3
-            #  },
+            "head" :  {
+                'initX': 0.0,
+                'initY': 0.0,
+                'currX': 0.0,
+                'currY': 0.0,
+                'currTheta': 0.0,
+                'targetX': 0.0,
+                'targetY': 0.0,
+                'keypoint_x' : 0,
+                'keypoint_y' : 1,
+                'publisher' : self.head_pub
+             },
+            "left_a" :  {
+                'initX': 0.0,
+                'initY': 0.0,
+                'currX': 0.0,
+                'currY': 0.0,
+                'currTheta': 0.0,
+                'targetX': 0.0,
+                'targetY': 0.0,
+                'keypoint_x' : 2,
+                'keypoint_y' : 3,
+                'publisher' : self.left_a_pub
+             },
             "right_a" :  {
                 'initX': 0.0,
                 'initY': 0.0,
@@ -45,43 +53,41 @@ class MovementNodeOdom(Node):
                 'targetX': 0.0,
                 'targetY': 0.0,
                 'keypoint_x' : 4,
-                'keypoint_y' : 5
+                'keypoint_y' : 5,
+                'publisher' : self.right_a_pub
              },
-            # "left_l" :  {
-            #     'initX': 0.0,
-            #     'initY': 0.0,
-            #     'currX': 0.0,
-            #     'currY': 0.0,
-            #     'currTheta': 0.0,
-            #     'targetX': 0.0,
-            #     'targetY': 0.0,
-            #     'keypoint_x' : 6,
-            #     'keypoint_y' : 7
-            #  },
-            # "right_l" :  {
-            #     'initX': 0.0,
-            #     'initY': 0.0,
-            #     'currX': 0.0,
-            #     'currY': 0.0,
-            #     'currTheta': 0.0,
-            #     'targetX': 0.0,
-            #     'targetY': 0.0,
-            #     'keypoint_x' : 8,
-            #     'keypoint_y' : 9
-            #  }
+            "left_l" :  {
+                'initX': 0.0,
+                'initY': 0.0,
+                'currX': 0.0,
+                'currY': 0.0,
+                'currTheta': 0.0,
+                'targetX': 0.0,
+                'targetY': 0.0,
+                'keypoint_x' : 6,
+                'keypoint_y' : 7,
+                'publisher' : self.left_l_pub
+             },
+            "right_l" :  {
+                'initX': 0.0,
+                'initY': 0.0,
+                'currX': 0.0,
+                'currY': 0.0,
+                'currTheta': 0.0,
+                'targetX': 0.0,
+                'targetY': 0.0,
+                'keypoint_x' : 8,
+                'keypoint_y' : 9,
+                'publisher' : self.right_l_pub
+             }
          }
 
-        # self.head_pub = self.create_publisher(Twist, "head/cmd_vel", 10)
-        # self.left_a_pub = self.create_publisher(Twist, "left_a/cmd_vel", 10)
-        self.right_a_pub = self.create_publisher(Twist, "right_a/cmd_vel", 10)
-        # self.left_l_pub = self.create_publisher(Twist, "left_l/cmd_vel", 10)
-        # self.right_l_pub = self.create_publisher(Twist, "right_l/cmd_vel", 10)
 
-        # self.create_subscription(Odometry, "head/odom", self.update_pose, 10)
-        # self.create_subscription(Odometry, "left_a/odom", self.update_pose, 10)
+        self.create_subscription(Odometry, "head/odom", self.update_pose, 10)
+        self.create_subscription(Odometry, "left_a/odom", self.update_pose, 10)
         self.create_subscription(Odometry, "right_a/odom", self.update_pose, 10)
-        # self.create_subscription(Odometry, "left_l/odom", self.update_pose, 10)
-        # self.create_subscription(Odometry, "right_l/odom", self.update_pose, 10)
+        self.create_subscription(Odometry, "left_l/odom", self.update_pose, 10)
+        self.create_subscription(Odometry, "right_l/odom", self.update_pose, 10)
 
     def process_keypoint(self, keypoint):       
         for neato_name, neato_value in self.neato_info.items():
@@ -107,7 +113,7 @@ class MovementNodeOdom(Node):
 
         # Extracting position (x, y) and putting them in dictionary
         self.neato_info[neato_name]["currX"] = msg.pose.pose.position.x
-        self.neato_info[neato_name]["currY"] = msg.pose.pose.position.y # change this back
+        self.neato_info[neato_name]["currY"] = msg.pose.pose.position.y 
 
         # Extracting orientation (quaternion)
         quaternion = (
@@ -125,18 +131,19 @@ class MovementNodeOdom(Node):
 
         # probably works, come back to if things don't
         # publisher = getattr(self, f"{neato_name}_pub")
-        publisher = self.right_a_pub
+        publisher = neato_value["publisher"]
         
         # initialize variables so they can be used as the conditional for the while loop
         curr_x = neato_value["currX"]
         curr_y = neato_value["currY"]
         curr_theta = neato_value["currTheta"]
         new_x = neato_value["targetX"]
-        new_y = neato_value["targetX"]
-        print(f"y: {curr_y}")
+        new_y = neato_value["targetY"]
+        print(f"x: {curr_x}")
+        print(f"target: {new_x}")
 
         delta_x = new_x - curr_x
-        delta_y = new_y - curr_y
+        # delta_y = new_y - curr_y
         # vel = math.sqrt(delta_x**2 + delta_y**2)
         # print(f"delta y: {delta_y}")
         
