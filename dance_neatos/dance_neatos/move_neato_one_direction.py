@@ -92,39 +92,62 @@ class MovementNodeOdom(Node):
         self.create_subscription(Odometry, "left_l/odom", self.update_pose, 10)
         self.create_subscription(Odometry, "right_l/odom", self.update_pose, 10)
 
-    def process_keypoint(self, keypoint):
+    def process_keypoint(self, keypoint: Int32MultiArray):
+        """
+        Process a received keypoint message, updating Neato robot positions.
+
+        This method takes a keypoint message and updates the positions of Neato robots
+        based on the keypoint information. The keypoint data is used to compute the initial
+        and target positions of each Neato robot. If the initial positions haven't been set,
+        they are initialized with the first received keypoint. Subsequent keypoints are used
+        to update the target positions, and the `move_neato` method is called to perform
+        the necessary actions.
+
+        Args:
+            keypoint (Int32MultiArray): A ROS Int32MultiArray containing keypoint information.
+        """
         for neato_name, neato_value in self.neato_info.items():
-
-            # if the starting points of the neatos haven't been set to the positions of their
-            # keypoints in the first frame, then do that
-
+            # Check if the initial positions of the neatos haven't been set
             if neato_value["initX"] == 0.0 and neato_value["initY"] == 0.0:
+                # Set initial positions to the positions of their keypoints in the first frame
                 initX, initY = convert(
                     keypoint.data[neato_value["keypoint_x"]],
                     keypoint.data[neato_value["keypoint_y"]],
                 )
                 neato_value["initX"] = initX
                 neato_value["initY"] = initY
-                # print(f"init y: {initY}")
             else:
-                # print(f"keypoint: {keypoint.data[neato_value['keypoint_y']]}")
+                # Compute target positions from the current keypoint
                 targetX, targetY = convert(
                     keypoint.data[neato_value["keypoint_x"]],
                     keypoint.data[neato_value["keypoint_y"]],
                 )
                 neato_value["targetX"] = targetX
                 neato_value["targetY"] = targetY
-                # print(f"Target Y: {targetY}")
-                self.move_neato(neato_name, neato_value)
+                
+                # Move the Neato robot to the new target position
+                self.move_neato(neato_value)
 
-    def update_pose(self, msg):
+    def update_pose(self, msg: Odometry):
+        """
+        Update the pose information for a Neato robot based on a received ROS message.
+
+        This method is designed to update the current position (x, y) and heading (theta) of a Neato
+        robot based on a received ROS message containing pose information. The provided ROS message is
+        assumed to have the necessary fields, such as `header.frame_id`, `pose.pose.position.x`,
+        `pose.pose.position.y`, and `pose.pose.orientation` for extracting relevant information.
+
+        Args:
+            msg (Odometry): A ROS message containing pose information.
+        """
+        # Extract Neato name from the ROS message header
         neato_name = msg.header.frame_id[0:-4]
 
-        # Extracting position (x, y) and putting them in dictionary
+        # Extract and update current position (x, y) in the neato_info dictionary
         self.neato_info[neato_name]["currX"] = msg.pose.pose.position.x
         self.neato_info[neato_name]["currY"] = msg.pose.pose.position.y
 
-        # Extracting orientation (quaternion)
+        # Extract quaternion from the ROS message orientation
         quaternion = (
             msg.pose.pose.orientation.x,
             msg.pose.pose.orientation.y,
@@ -132,41 +155,39 @@ class MovementNodeOdom(Node):
             msg.pose.pose.orientation.w,
         )
 
-        # Convert quaternion to Euler angles. Put heading into dictionary
+        # Convert quaternion to Euler angles and update the current heading (theta)
         _, _, self.neato_info[neato_name]["currTheta"] = quaternion_to_euler(quaternion)
 
-    def move_neato(self, neato_name, neato_value):
+    def move_neato(self, neato_value: dict):
+        """
+        Move a Neato robot to a target position in the X axis.
+
+        This method calculates the required linear velocity to move a Neato robot from its current
+        position to a target position specified in the `neato_value` dictionary. 
+
+        Args:
+            neato_value (dict): Dictionary containing information about the Neato robot, including
+                current position (`currX`, `currY`), current heading (`currTheta`), target position
+                (`targetX`, `targetY`), and ROS publisher (`publisher`).
+        """
         msg = Twist()
 
-        # probably works, come back to if things don't
-        # publisher = getattr(self, f"{neato_name}_pub")
+        # Retrieve the ROS publisher for the Neato robot
         publisher = neato_value["publisher"]
 
-        # initialize variables so they can be used as the conditional for the while loop
+        # Extract relevant information from the neato_value dictionary
         curr_x = neato_value["currX"]
-        curr_y = neato_value["currY"]
-        curr_theta = neato_value["currTheta"]
         new_x = neato_value["targetX"]
-        new_y = neato_value["targetY"]
-        print(f"x: {curr_x}")
-        print(f"target: {new_x}")
 
+        # Calculate the change in x and y coordinates
         delta_x = new_x - curr_x
-        # delta_y = new_y - curr_y
-        # vel = math.sqrt(delta_x**2 + delta_y**2)
-        # print(f"delta y: {delta_y}")
 
+        # Check if movement is required (based on threshold)
         if abs(delta_x) > 0.03:
-
-            # new_theta = math.atan2(new_y, new_x)
-            # delta_theta = new_theta - curr_theta
-            # # print(f"delta theta: {delta_theta}")
-
             msg.linear.x = delta_x
-            # msg.angular.z = delta_theta
             publisher.publish(msg)
-
         else:
+            # Stop movement if the Neato robot is close to the target position
             msg.linear.x = 0.0
             msg.angular.z = 0.0
             publisher.publish(msg)
