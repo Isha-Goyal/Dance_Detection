@@ -4,7 +4,6 @@ Moves up to 5 Neatos in the X Y direction.
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-from visualization_msgs.msg import Marker
 from std_msgs.msg import Int32MultiArray
 import math
 from nav_msgs.msg import Odometry
