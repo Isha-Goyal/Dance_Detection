@@ -86,7 +86,7 @@ class MovementNodeOdom(Node):
         self.create_subscription(Odometry, "left_l/odom", self.update_pose, 10)
         self.create_subscription(Odometry, "right_l/odom", self.update_pose, 10)
 
-    def process_keypoint(self, keypoint):
+    def process_keypoint(self, keypoint: Int32MultiArray):
         """
         Process a received keypoint message, updating Neato robot positions.
 
@@ -122,7 +122,7 @@ class MovementNodeOdom(Node):
                 # Move the Neato robot to the new target position
                 self.move_neato(neato_value)
 
-    def update_pose(self, msg):
+    def update_pose(self, msg: Odometry):
         """
         Update the pose information for a Neato robot based on a received ROS message.
 
@@ -146,7 +146,7 @@ class MovementNodeOdom(Node):
         # Convert quaternion to Euler angles. Put heading into dictionary
         _, _, self.neato_info[neato_name]["currTheta"] = quaternion_to_euler(quaternion)
 
-    def move_neato(self, neato_value):
+    def move_neato(self, neato_value: dict):
         """
         Move a Neato robot to a target position in the X axis.
 
