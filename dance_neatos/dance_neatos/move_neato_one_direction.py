@@ -1,5 +1,5 @@
 """
-Moves up to 5 neatos in the X direction.
+Moves up to 5 Neatos in the X direction.
 """
 import rclpy
 from rclpy.node import Node
@@ -124,18 +124,13 @@ class MovementNodeOdom(Node):
                 )
                 neato_value["targetX"] = targetX
                 neato_value["targetY"] = targetY
-                
+
                 # Move the Neato robot to the new target position
                 self.move_neato(neato_value)
 
     def update_pose(self, msg: Odometry):
         """
         Update the pose information for a Neato robot based on a received ROS message.
-
-        This method is designed to update the current position (x, y) and heading (theta) of a Neato
-        robot based on a received ROS message containing pose information. The provided ROS message is
-        assumed to have the necessary fields, such as `header.frame_id`, `pose.pose.position.x`,
-        `pose.pose.position.y`, and `pose.pose.orientation` for extracting relevant information.
 
         Args:
             msg (Odometry): A ROS message containing pose information.
@@ -163,7 +158,7 @@ class MovementNodeOdom(Node):
         Move a Neato robot to a target position in the X axis.
 
         This method calculates the required linear velocity to move a Neato robot from its current
-        position to a target position specified in the `neato_value` dictionary. 
+        position to a target position specified in the `neato_value` dictionary.
 
         Args:
             neato_value (dict): Dictionary containing information about the Neato robot, including
@@ -175,12 +170,8 @@ class MovementNodeOdom(Node):
         # Retrieve the ROS publisher for the Neato robot
         publisher = neato_value["publisher"]
 
-        # Extract relevant information from the neato_value dictionary
-        curr_x = neato_value["currX"]
-        new_x = neato_value["targetX"]
-
         # Calculate the change in x and y coordinates
-        delta_x = new_x - curr_x
+        delta_x = neato_value["targetX"] - neato_value["currX"]
 
         # Check if movement is required (based on threshold)
         if abs(delta_x) > 0.03:
