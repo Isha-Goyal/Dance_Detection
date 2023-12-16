@@ -1,4 +1,4 @@
-# Dancing Neatos:
+# Dancing Neatos
 
 ### Maya Cranor and Isha Goyal
 
@@ -6,7 +6,8 @@
 
 We use a video or a livestream from a webcam of a person dancing to control a fleet of Neatos (vacuuming robots). Our algorithm determines the keypoints (such a joints and facial features) on the person in the video and tracks those movements. Then, our Neatos, which represent various joints, recreate it!
 
-[Find out more on our project website!](https://sites.google.com/d/1ufQN_tTxO0oaJaZOAn-jLHr9FHY_Wo-w/p/1CYW6M2799S7LYBzcWnM-6ZxBDkFgoDmS/edit)
+[Find out more on our project website!](hhttps://sites.google.com/view/comprobo23dancingneatos/home)
+
 
 ## Joint Detection - YOLO
 
